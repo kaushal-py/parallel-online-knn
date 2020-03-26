@@ -1,4 +1,4 @@
-# K-Nearest Neighbours Module
+# K-Nearest Neighbours Package
 
 This module contains various implementations of KNN. These are listed down as follows:
 
