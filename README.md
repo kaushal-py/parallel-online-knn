@@ -1,4 +1,13 @@
+---
+<div align="center">
+  
 # Parallel Online K - Nearest Neighbour Search using a Progressive k-d Tree
+
+[![works on Linux](https://img.shields.io/badge/works%20on-Linux-orange.svg)](http://shields.io/#your-badge)
+[![Built with ❤](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com/#)
+[![made with &hearts in Python](https://img.shields.io/badge/made%20with%20%E2%9D%A4%20in-Python-red.svg)](http://shields.io/#your-badge)
+
+</div>
 
 ### Authors
 - Kaushal Bhogale
