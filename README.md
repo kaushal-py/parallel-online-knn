@@ -30,5 +30,10 @@ The aim of the project is to develop an parallel online k-Nearest Neighbour sear
 - Test for various arrival frequencies and bandwidth of data.
 - Provide empirical justification for scenarios in which the online algorithm will be useful.
 
+## Useful Links
+- [Guide for project structure](https://docs.python-guide.org/writing/structure/)
+- [Writing tests](https://docs.pytest.org/en/latest/contents.html)
+- [K Nearest Neighbours in Numpy](https://tomaszgolan.github.io/introduction_to_machine_learning/markdown/introduction_to_machine_learning_01_knn/introduction_to_machine_learning_01_knn/)
+
 ## References
 M. M. A. Patwary et al., “PANDA: Extreme Scale Parallel KNearest Neighbor on Distributed Architectures,” in IEEE Parallel and Distributed Processing Symposium, 2016, pp. 494–503
