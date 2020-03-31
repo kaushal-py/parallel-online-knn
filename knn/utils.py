@@ -1,6 +1,6 @@
 import numpy as np
 
-class DataGenerator:
+class DataSystem:
 
 
     def __init__(self, dim=2, num_points=1000):
@@ -17,5 +17,5 @@ class DataGenerator:
             # TODO: Disk arrays
         
         # Memory arrays
-        data = np.random.rand(self.dim, self.num_points)
+        data = np.random.rand(self.num_points, self.dim)
         return data
