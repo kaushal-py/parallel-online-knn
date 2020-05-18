@@ -133,3 +133,4 @@ dmypy.json
 
 # History VSCode
 .history/
+.history/knn/
