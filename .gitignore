@@ -1,6 +1,10 @@
 # Vscode
 .vscode/
 
+# History VSCode
+.history/
+.history/knn/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -131,6 +135,3 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# History VSCode
-.history/
-.history/knn/
