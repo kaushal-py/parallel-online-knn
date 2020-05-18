@@ -29,7 +29,7 @@ class DataSystem:
 
             Parameters:
                 memory (bool)       : denoted whether the data has to be stored in memory or not
-                path (string)       : Path where the data will be stored, if memory = True
+                path (string)       : Path where the data will be stored, if memory = True (Please specify path as .txt)
                 **kwargs            : Parameters of the required distribution.
 
             Returns:
@@ -43,12 +43,14 @@ class DataSystem:
         # Update the arguments from the **kwargs passed
         func_args.update(pair for pair in kwargs.items() if pair[0] in func_args.keys())
 
+        print(func_args)
+
         if memory is not True:
             assert path is not None, "Specify path, if you don't want things in memory"
         
             # TODO: Disk arrays
-
-
+            # Save the array to the given path
+            np.savetxt(path, func(**func_args))
 
         else:
             # Memory arrays
@@ -67,7 +69,7 @@ class DataSystem:
             'poisson': np.random.poisson,
         }
         # Get the function from function dictionary
-        func = func_dict.get(distribution, lambda: "Invalid distribution")
+        func = func_dict.get(self.distribution, lambda: "Invalid distribution")
         # Return the function
         return func
     
@@ -83,6 +85,9 @@ class DataSystem:
             'poisson': {'lam' : 1.0, 'size' : (self.num_points, self.dim)},
         }
         # Get the arguments from argument dictionary
-        args = arg_dict.get(distribution, lambda: "Invalid distribution")
+        args = arg_dict.get(self.distribution, lambda: "Invalid distribution")
         # Return the arguments
         return args
+
+data = DataSystem(10, 100, 'normal')
+print(data.generate(True, None, {'loc' : 0.0, 'scale' : 5.0, 'size' : (data.num_points, data.dim)}))
