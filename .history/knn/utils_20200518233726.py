@@ -7,14 +7,11 @@ class DataSystem:
 
         self.dim = dim
         self.num_points = num_points
-        self.distribution = distribution
+        seld.distribution = distribution
     
 
     def generate(self, memory=True, path=None, **kwargs):
-        
-        # Get the correspoding numpy function for the distribution
-        func = self.get_dist_func(self.distribution)
-        
+
         if memory is not True:
             assert path is not None, "Specify path, if you don't want things in memory"
         

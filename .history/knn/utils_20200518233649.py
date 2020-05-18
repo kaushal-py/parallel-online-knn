@@ -7,14 +7,11 @@ class DataSystem:
 
         self.dim = dim
         self.num_points = num_points
-        self.distribution = distribution
+        seld.distribution = distribution
     
 
     def generate(self, memory=True, path=None, **kwargs):
-        
-        # Get the correspoding numpy function for the distribution
-        func = self.get_dist_func(self.distribution)
-        
+
         if memory is not True:
             assert path is not None, "Specify path, if you don't want things in memory"
         
@@ -26,7 +23,6 @@ class DataSystem:
             data = np.random.rand(self.num_points, self.dim)
             return data
     
-
     def get_dist_func(self, distribution):
         func_dict = {
             'normal': np.random.normal,
@@ -38,7 +34,7 @@ class DataSystem:
             'multinoamial': np.random.multinomial,
             'poisson': np.random.poisson,
         }
-        # Get the function from function dictionary
+        # Get the function from switcher dictionary
         func = func_dict.get(distribution, lambda: "Invalid distribution")
-        # Return the function
+        # Execute the function
         return func

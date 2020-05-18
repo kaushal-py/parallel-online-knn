@@ -3,18 +3,14 @@ import numpy as np
 class DataSystem:
 
 
-    def __init__(self, dim=2, num_points=1000, distribution = 'normal'):
+    def __init__(self, dim=2, num_points=1000):
 
         self.dim = dim
         self.num_points = num_points
-        self.distribution = distribution
     
 
-    def generate(self, memory=True, path=None, **kwargs):
-        
-        # Get the correspoding numpy function for the distribution
-        func = self.get_dist_func(self.distribution)
-        
+    def generate(self, memory=True, path=None, distribution='normal', **kwargs):
+
         if memory is not True:
             assert path is not None, "Specify path, if you don't want things in memory"
         
@@ -26,8 +22,7 @@ class DataSystem:
             data = np.random.rand(self.num_points, self.dim)
             return data
     
-
-    def get_dist_func(self, distribution):
+    def get_dist_func(distribution):
         func_dict = {
             'normal': np.random.normal,
             'uniform': np.random.uniform,
@@ -38,7 +33,7 @@ class DataSystem:
             'multinoamial': np.random.multinomial,
             'poisson': np.random.poisson,
         }
-        # Get the function from function dictionary
-        func = func_dict.get(distribution, lambda: "Invalid distribution")
-        # Return the function
+        # Get the function from switcher dictionary
+        func = func_dict.get(argument, lambda: "Invalid distribution")
+        # Execute the function
         return func

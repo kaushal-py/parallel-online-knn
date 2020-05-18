@@ -14,7 +14,6 @@ class DataSystem:
         
         # Get the correspoding numpy function for the distribution
         func = self.get_dist_func(self.distribution)
-        
         if memory is not True:
             assert path is not None, "Specify path, if you don't want things in memory"
         
