@@ -33,4 +33,18 @@ class VectorKNN(BaseKNN):
         return self.data[min_index]
     
     
-        
+class LoopKNN(BaseKNN):
+
+    def __init__(self, k, data, distance=2):
+        super().__init__(k, data, distance)
+    
+    def predict(self, x):
+        min_distance = float('inf')
+        min_index = 0
+        for idx, datapoint in enumerate(data):
+            current_distance = self.distance(datapoint-x)
+            if current_distance < min_distance:
+                min_index = idx
+                min_distance = current_distance
+        return self.data[min_index]
+
