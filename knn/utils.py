@@ -89,5 +89,5 @@ class DataSystem:
         # Return the arguments
         return args
 
-data = DataSystem(10, 100, 'normal')
-print(data.generate(True, None, {'loc' : 0.0, 'scale' : 5.0, 'size' : (data.num_points, data.dim)}))
+# data = DataSystem(10, 100, 'normal')
+# print(data.generate(True, None, {'loc' : 0.0, 'scale' : 5.0, 'size' : (data.num_points, data.dim)}))
