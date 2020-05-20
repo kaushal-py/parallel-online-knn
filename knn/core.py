@@ -1,7 +1,7 @@
 import numpy as np
 from .utils import DataSystem
 
-class BaseKNN:
+class BaseKNN(object):
 
     def __init__(self, k=1, data=None, distance=2):
         self.k = k
@@ -25,7 +25,7 @@ class BaseKNN:
 class VectorKNN(BaseKNN):
 
     def __init__(self, k, data, distance=2):
-        super().__init__(k, data, distance)
+        super(VectorKNN, self).__init__(k, data, distance)
     
     def predict(self, x):
         distances = np.sum(self.distance(self.data- x), axis=1)
@@ -36,15 +36,86 @@ class VectorKNN(BaseKNN):
 class LoopKNN(BaseKNN):
 
     def __init__(self, k, data, distance=2):
-        super().__init__(k, data, distance)
+        super(LoopKNN, self).__init__(k, data, distance)
     
     def predict(self, x):
         min_distance = float('inf')
         min_index = 0
-        for idx, datapoint in enumerate(data):
-            current_distance = self.distance(datapoint-x)
+        for idx, datapoint in enumerate(self.data):
+            current_distance = np.sum(self.distance(self.data[idx]- x))
             if current_distance < min_distance:
                 min_index = idx
                 min_distance = current_distance
         return self.data[min_index]
+
+
+class _KDNode:
+
+    def __init__(self, dimensions, split_axis, data):
+        self.split_axis = split_axis
+        self.dimensions = dimensions
+        self.right_child = None
+        self.left_child = None
+        self.data = data
+        self.split_point = None
+
+    def split(self, level=0):
+
+        if level > 0:
+            self.split_point = np.median(self.data[:,self.split_axis])
+            child_axis = (self.split_axis+1)%self.dimensions
+            left_data = self.data[self.data[:,self.split_axis] <= self.split_point]
+            right_data = self.data[self.data[:,self.split_axis] > self.split_point]
+
+            self.right_child = _KDNode(self.dimensions, child_axis, right_data)
+            self.left_child = _KDNode(self.dimensions, child_axis, left_data)
+
+            self.left_child.split(level-1)
+            self.right_child.split(level-1)
+
+    def pre_order(self):
+        
+        if self.split_point is not None:
+            print(self.split_axis, self.split_point)
+            self.left_child.pre_order()
+            self.right_child.pre_order()
+
+        
+class KDTreeKNN(BaseKNN):
+
+    def __init__(self, k, data, distance=2):
+
+        super(KDTreeKNN, self).__init__(k, data, distance)
+        dimensions = self.data.shape[1]
+        self.tree = _KDNode(dimensions, 0, self.data)
+        self.tree.split(level=5)
+        # self.tree.pre_order()
+
+    def predict(self, x):
+
+        node = self.tree
+        while node.split_point is not None:
+            if x[node.split_axis] <= node.split_point:
+                node = node.left_child
+            else:
+                node = node.right_child
+
+        distances = np.sum(self.distance(node.data- x), axis=1)
+        min_index = np.argmin(distances)
+        return node.data[min_index]
+
+        
+
+            
+
+
+
+
+
+
+            
+
+
+
+        
 

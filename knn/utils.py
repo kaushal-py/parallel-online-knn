@@ -21,6 +21,7 @@ class DataSystem:
         self.dim = dim
         self.num_points = num_points
         self.distribution = distribution
+        np.random.seed(42)
     
 
     def generate(self, memory=True, path=None, **kwargs):
@@ -43,8 +44,6 @@ class DataSystem:
         # Update the arguments from the **kwargs passed
         func_args.update(pair for pair in kwargs.items() if pair[0] in func_args.keys())
 
-        print(func_args)
-
         if memory is not True:
             assert path is not None, "Specify path, if you don't want things in memory"
         
@@ -55,6 +54,7 @@ class DataSystem:
         else:
             # Memory arrays
             data = func(**func_args)
+            print(data.shape)
             return data
     
 
@@ -89,5 +89,3 @@ class DataSystem:
         # Return the arguments
         return args
 
-# data = DataSystem(10, 100, 'normal')
-# print(data.generate(True, None, {'loc' : 0.0, 'scale' : 5.0, 'size' : (data.num_points, data.dim)}))
