@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 class DataSystem:
 
@@ -89,3 +90,11 @@ class DataSystem:
         # Return the arguments
         return args
 
+
+class Generator(DataSystem):
+
+    def data_generator(self, chunk_size, sleep_time, **kwargs):
+        data = self.data_loader.generate(memory=True, path=None)
+        for i in range(self.num_points):
+            yield data[i:]
+            time.sleep(sleep_time)
