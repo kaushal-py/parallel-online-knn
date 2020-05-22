@@ -23,7 +23,6 @@ class DataSystem:
         self.num_points = num_points
         self.distribution = distribution
         np.random.seed(42)
-    
 
     def generate(self, memory=True, path=None, **kwargs):
         """
@@ -46,7 +45,6 @@ class DataSystem:
 
         if memory is not True:
             assert path is not None, "Specify path, if you don't want things in memory"
-        
             # TODO: Disk arrays
             # Save the array to the given path
             np.savetxt(path, func(**func_args))
@@ -56,7 +54,6 @@ class DataSystem:
             data = func(**func_args)
             # print(data.shape)
             return data
-    
 
     def get_dist_func(self):
         func_dict = {
@@ -72,7 +69,6 @@ class DataSystem:
         func = func_dict.get(self.distribution, lambda: "Invalid distribution")
         # Return the function
         return func
-    
 
     def get_func_args(self):
         arg_dict = {
@@ -105,7 +101,7 @@ class Data_Generator(DataSystem):
                     'low_high'               : A stretch of low values followed by high values
                     'high_low'               : A stretch of high values followed by low values
         """
-        super().__init__(dim=2, num_points=1000, distribution = 'normal')
+        super().__init__(dim=dim, num_points=num_points, distribution=distribution)
         self.chunk_dist = chunk_dist
         self.high = high
         self.low = low
@@ -119,7 +115,7 @@ class Data_Generator(DataSystem):
                 return self.low, 1
             else:
                 return self.num_points - total, 0
-        
+
         elif (self.chunk_dist == 'constant_high'):
             if (self.high+total < self.num_points):
                 return self.high, 1
@@ -132,7 +128,7 @@ class Data_Generator(DataSystem):
                 return num, 1
             else:
                 return self.num_points-total, 0
-        
+
         elif (self.chunk_dist == 'crest_trough'):
             toss = np.random.uniform(low = 0.0, high = 1.0)
             if (toss < 0.5 and self.low+total < self.num_points):
@@ -141,7 +137,7 @@ class Data_Generator(DataSystem):
                 return self.high, 1
             else:
                 return self.num_points-total, 0
-        
+
         elif (self.chunk_dist == 'low_high'):
             if (total+self.low < self.num_points/2):
                 return self.low, 1
@@ -159,7 +155,7 @@ class Data_Generator(DataSystem):
                 return self.num_points-total, 0
 
 
-    def data_generator(self, memory, path, **kwargs):
+    def generator(self, **kwargs):
         total = 0
         flag = 1
         while (flag):
@@ -171,7 +167,11 @@ class Data_Generator(DataSystem):
 
 # data_class = Data_Generator('constant_high', 100, 10, 1, 1000, 'gamma')
 # count = 0
+<<<<<<< HEAD
 # for data in data_class.data_generator(True, None, loc = 0.0, scale = 1.0, size = (data_class.num_points, data_class.dim)):
+=======
+# for data in data_class.generator(True, None):#, loc = 0.0, scale = 1.0, size = (data_class.num_points, data_class.dim)):
+>>>>>>> 7cab119c1f0f9ae61766d3dce1dae4e6a39479a2
 #     print(data.shape)
 #     count+=1
 #     if (count==10):
