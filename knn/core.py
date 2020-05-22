@@ -22,6 +22,10 @@ class BaseKNN(object):
         # TODO: Extend this abstract method
         raise NotImplementedError
 
+    def add_batch(self, new_batch):
+        # TODO: Extend this abstract method
+        raise NotImplementedError
+
 
 class VectorKNN(BaseKNN):
 
@@ -32,6 +36,9 @@ class VectorKNN(BaseKNN):
         distances = np.sum(self.distance(self.data- x), axis=1)
         min_index = np.argmin(distances)
         return self.data[min_index]
+
+    def add_batch(self, new_batch):
+        self.data = np.concatenate((self.data, new_batch))
 
 class ParallelVectorKNN(BaseKNN):
 
@@ -62,6 +69,9 @@ class ParallelVectorKNN(BaseKNN):
             min_index = np.argmin(global_distances)
             return recv_buf[min_index]
 
+    def add_batch(self, new_batch):
+        self.data = np.concatenate((self.data, new_batch))
+
 
 class LoopKNN(BaseKNN):
 
@@ -78,6 +88,8 @@ class LoopKNN(BaseKNN):
                 min_distance = current_distance
         return self.data[min_index]
 
+    def add_batch(self, new_batch):
+        self.data = np.concatenate((self.data, new_batch))
 
 class _KDNode:
 
@@ -134,5 +146,18 @@ class KDTreeKNN(BaseKNN):
         distances = np.sum(self.distance(node.data- x), axis=1)
         min_index = np.argmin(distances)
         return node.data[min_index]
+
+    def add_batch(self, new_batch):
+
+        for x in new_batch:
+
+            node = self.tree
+            while node.split_point is not None:
+                if x[node.split_axis] <= node.split_point:
+                    node = node.left_child
+                else:
+                    node = node.right_child
+
+            node.data = np.concatenate(node.data, [x])
 
 

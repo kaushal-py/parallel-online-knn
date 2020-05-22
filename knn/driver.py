@@ -11,12 +11,15 @@ def main():
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
 
-    data_loader = knn.DataSystem(2, int(1e7), 'uniform')
+    data_loader = knn.DataSystem(2, int(1e3), 'uniform')
     data = data_loader.generate(memory=True, path=None)
+    batch_generator = knn.Data_Generator(chunk_dist='constant_low', dim=2, num_points=int(1e2), distribution='uniform')
+    batch_loader = batch_generator.generator()
     if rank==0:
 
         model_vector = knn.VectorKNN(1, data)
         # model_loop = knn.LoopKNN(1, data)
+        model_vector.add_batch(next(batch_loader))
 
         start = time.monotonic()
         nearest_vector = model_vector.predict(np.array([1.0,0.0]))
@@ -39,6 +42,7 @@ def main():
         # print(nearest_kd, nearest_vector)
 
     model_parallel_vector = knn.ParallelVectorKNN(1, data)
+    model_parallel_vector.add_batch(next(batch_loader))
 
     start = time.monotonic()
     nearest_parallel_vector = model_parallel_vector.predict(np.array([1.0,0.0]))
