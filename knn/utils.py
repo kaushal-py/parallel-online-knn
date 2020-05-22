@@ -106,7 +106,7 @@ class Data_Generator(DataSystem):
                     'low_high'               : A stretch of low values followed by high values
                     'high_low'               : A stretch of high values followed by low values
         """
-
+        super().__init__()
         self.chunk_dist = chunk_dist
         self.high = high
         self.low = low
@@ -161,4 +161,4 @@ class Data_Generator(DataSystem):
             data = self.generate(memory=True, path=None, size = (chunk_size, self.dim))
             yield data
 
-# data_class = DataSystem()
+data_class = Data_Generator()
