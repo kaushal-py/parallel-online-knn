@@ -1,3 +1,4 @@
+from mpi4py import MPI
 import numpy as np
 from .utils import DataSystem
 
@@ -15,7 +16,7 @@ class BaseKNN(object):
         elif distance == 2:
             self.distance = np.square  # square root
         else:
-            raise Exception("Distance not defined.")    
+            raise Exception("Distance not defined.")
 
     def predict(self, x):
         # TODO: Extend this abstract method
@@ -26,18 +27,47 @@ class VectorKNN(BaseKNN):
 
     def __init__(self, k, data, distance=2):
         super(VectorKNN, self).__init__(k, data, distance)
-    
+
     def predict(self, x):
         distances = np.sum(self.distance(self.data- x), axis=1)
         min_index = np.argmin(distances)
         return self.data[min_index]
-    
-    
+
+class ParallelVectorKNN(BaseKNN):
+
+    def __init__(self, k, data, distance=2):
+        super(ParallelVectorKNN, self).__init__(k, data, distance)
+        self.comm = MPI.COMM_WORLD
+        self.rank = self.comm.Get_rank()
+        self.num_procs = self.comm.Get_size()
+        self.num_points = data.shape[0]
+
+    def predict(self, x):
+        chunk_size = self.num_points // self.num_procs
+        if self.rank != self.num_procs-1:
+            my_data = self.data[self.rank*chunk_size:(self.rank+1)*chunk_size]
+        else:
+            my_data = self.data[self.rank*chunk_size:]
+        local_distances = np.sum(self.distance(my_data-x), axis=1)
+        min_index = np.argmin(local_distances)
+        local_min = my_data[min_index]
+
+        # Gather all data in process 0
+        recv_buf = None
+        if self.rank==0:
+            recv_buf = np.empty((self.num_procs, self.data.shape[1]))
+        self.comm.Gather(local_min, recv_buf, root=0)
+        if self.rank==0:
+            global_distances = np.sum(self.distance(recv_buf-x), axis=1)
+            min_index = np.argmin(global_distances)
+            return recv_buf[min_index]
+
+
 class LoopKNN(BaseKNN):
 
     def __init__(self, k, data, distance=2):
         super(LoopKNN, self).__init__(k, data, distance)
-    
+
     def predict(self, x):
         min_distance = float('inf')
         min_index = 0
@@ -70,17 +100,18 @@ class _KDNode:
             self.right_child = _KDNode(self.dimensions, child_axis, right_data)
             self.left_child = _KDNode(self.dimensions, child_axis, left_data)
 
+            self.data = None
             self.left_child.split(level-1)
             self.right_child.split(level-1)
 
     def pre_order(self):
-        
+
         if self.split_point is not None:
             print(self.split_axis, self.split_point)
             self.left_child.pre_order()
             self.right_child.pre_order()
 
-        
+
 class KDTreeKNN(BaseKNN):
 
     def __init__(self, k, data, distance=2):
@@ -104,18 +135,4 @@ class KDTreeKNN(BaseKNN):
         min_index = np.argmin(distances)
         return node.data[min_index]
 
-        
-
-            
-
-
-
-
-
-
-            
-
-
-
-        
 

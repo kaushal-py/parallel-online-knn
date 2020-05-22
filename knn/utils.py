@@ -23,7 +23,6 @@ class DataSystem:
         self.num_points = num_points
         self.distribution = distribution
         np.random.seed(42)
-    
 
     def generate(self, memory=True, path=None, **kwargs):
         """
@@ -47,7 +46,6 @@ class DataSystem:
 
         if memory is not True:
             assert path is not None, "Specify path, if you don't want things in memory"
-        
             # TODO: Disk arrays
             # Save the array to the given path
             np.savetxt(path, func(**func_args))
@@ -57,7 +55,6 @@ class DataSystem:
             data = func(**func_args)
             print(data.shape)
             return data
-    
 
     def get_dist_func(self):
         func_dict = {
@@ -73,7 +70,6 @@ class DataSystem:
         func = func_dict.get(self.distribution, lambda: "Invalid distribution")
         # Return the function
         return func
-    
 
     def get_func_args(self):
         arg_dict = {
@@ -161,4 +157,4 @@ class Data_Generator(DataSystem):
             data = self.generate(memory=True, path=None, size = (chunk_size, self.dim))
             yield data
 
-data_class = Data_Generator()
+# data_class = Data_Generator()
