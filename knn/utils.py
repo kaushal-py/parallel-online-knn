@@ -91,10 +91,74 @@ class DataSystem:
         return args
 
 
-class Generator(DataSystem):
+class Data_Generator(DataSystem):
 
-    def data_generator(self, chunk_size, sleep_time, **kwargs):
-        data = self.data_loader.generate(memory=True, path=None)
-        for i in range(self.num_points):
-            yield data[i:]
-            time.sleep(sleep_time)
+    def __init__(self, chunk_dist, high=100, low=10):
+
+        """
+        Parameters
+            chunk_dist (string)              : The distribution of the online chunks to be sent to each processor
+                options:
+                    'constant_low'           : Constant low values throughout
+                    'constant_high'          : Constant high values throughout
+                    'random'                 : Completely random set of values between 1 and 100
+                    'crest_trough'           : Alternating values of high and low
+                    'low_high'               : A stretch of low values followed by high values
+                    'high_low'               : A stretch of high values followed by low values
+        """
+
+        self.chunk_dist = chunk_dist
+        self.high = high
+        self.low = low
+        # self.sleep_dist = sleep_dist
+
+
+    def generate_chunk_list(self):
+
+        if (self.chunk_dist == 'consant_low'):
+            no_chunks = int(self.num_points / self.low)
+            chunk_list = [self.low]
+            return chunk_list*no_chunks
+        
+        elif (self.chunk_dist == 'constant_high'):
+            no_chunks = int(self.num_points / self.high)
+            chunk_list = [self.high]
+            return chunk_list*no_chunks
+
+        elif (self.chunk_dist == 'random'):
+            no_chunks = int(self.num_points / self.high)
+            chunk_list = []
+            total = no_chunks
+            for i in range(no_chunks-1):
+                val = np.random.randint(0, total)
+                chunk_list.append(val)
+                total -= val
+            chunk_list.append(total)
+            return chunk_list
+        
+        elif (self.chunk_dist == 'crest_trough'):
+            each_count = int(self.num_points / (self.low + self.high))
+            chunk_list = [self.low, self.high]
+            return chunk_list*each_count
+        
+        elif (self.chunk_dist == 'low_high'):
+            each_count = int(self.num_points / (self.low + self.high))
+            low_list = [self.low]*each_count
+            high_list = [self.high]*each_count
+            return low_list+high_list
+
+        elif (self.chunk_dist == 'high_low'):
+            each_count = int(self.num_points / (self.low + self.high))
+            low_list = [self.low]*each_count
+            high_list = [self.high]*each_count
+            return high_list+low_list
+
+
+    def data_generator(self, chunk_size, **kwargs):
+        
+        chunk_list = self.generate_chunk_list()
+        for chunk_size in chunk_list:
+            data = self.generate(memory=True, path=None, size = (chunk_size, self.dim))
+            yield data
+
+# data_class = DataSystem()
