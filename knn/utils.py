@@ -166,8 +166,8 @@ class Data_Generator(DataSystem):
         while (flag):
             chunk_size, flag = self.generate_chunk_size(total)
             total += chunk_size
-            data = self.generate(memory=True, path=None, size = (chunk_size, self.dim))
-            print(chunk_size)
+            data = self.generate(memory=True, path=None, **kwargs)
+            # print(chunk_size)
             yield data
 
 # data_class = Data_Generator('constant_high', 100, 10, 1, 1000, 'gamma')
