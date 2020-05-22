@@ -102,7 +102,7 @@ class Data_Generator(DataSystem):
                     'low_high'               : A stretch of low values followed by high values
                     'high_low'               : A stretch of high values followed by low values
         """
-        super().__init__(dim=2, num_points=1000, distribution = 'normal')
+        super().__init__(dim=dim, num_points=num_points, distribution=distribution)
         self.chunk_dist = chunk_dist
         self.high = high
         self.low = low
@@ -156,7 +156,7 @@ class Data_Generator(DataSystem):
                 return self.num_points-total, 0
 
 
-    def data_generator(self, memory, path, **kwargs):
+    def generator(self, **kwargs):
         total = 0
         flag = 1
         while (flag):
@@ -168,7 +168,7 @@ class Data_Generator(DataSystem):
 
 # data_class = Data_Generator('constant_high', 100, 10, 1, 1000, 'gamma')
 # count = 0
-# for data in data_class.data_generator(True, None):#, loc = 0.0, scale = 1.0, size = (data_class.num_points, data_class.dim)):
+# for data in data_class.generator(True, None):#, loc = 0.0, scale = 1.0, size = (data_class.num_points, data_class.dim)):
 #     print(data.shape)
 #     count+=1
 #     if (count==10):
