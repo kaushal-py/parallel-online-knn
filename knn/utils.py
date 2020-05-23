@@ -35,7 +35,6 @@ class DataSystem:
 
             Returns:
             data                    : Numpy array of size (num_points x dim)
-
         """
         # Get the correspoding numpy function for the distribution
         func = self.get_dist_func()
@@ -53,7 +52,7 @@ class DataSystem:
         else:
             # Memory arrays
             data = func(**func_args)
-            print(data.shape)
+            # print(data.shape)
             return data
 
     def get_dist_func(self):
@@ -165,12 +164,3 @@ class Data_Generator(DataSystem):
             data = self.generate(memory=True, path=None, **kwargs)
             # print(chunk_size)
             yield data
-
-# data_class = Data_Generator('constant_high', 100, 10, 1, 1000, 'gamma')
-# count = 0
-# for data in data_class.generator(True, None):#, loc = 0.0, scale = 1.0, size = (data_class.num_points, data_class.dim)):
-#     print(data.shape)
-#     count+=1
-#     if (count==10):
-#         print(data)
-# print('final count is ', count)
