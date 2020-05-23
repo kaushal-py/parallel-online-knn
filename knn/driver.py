@@ -33,13 +33,14 @@ def main():
 
         # assert np.array_equal(nearest_loop, nearest_vector), "Outputs did not match."
 
-        # model_kd = knn.KDTreeKNN(1, data)
-        # start = time.monotonic()
-        # nearest_kd = model_kd.predict(np.array([1.0,0.0]))
-        # end = time.monotonic()
-        # print("Execution Time:", end-start)
+        model_kd = knn.KDTreeKNN(1, data, balance_distance=2)
+        model_kd.add_batch(next(batch_loader))
+        start = time.monotonic()
+        nearest_kd = model_kd.predict(np.array([1.0,0.0]))
+        end = time.monotonic()
+        print("Execution Time:", end-start)
 
-        # print(nearest_kd, nearest_vector)
+        print(nearest_kd, nearest_vector)
 
     model_parallel_vector = knn.ParallelVectorKNN(1, data)
     model_parallel_vector.add_batch(next(batch_loader))

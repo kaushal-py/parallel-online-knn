@@ -99,12 +99,16 @@ class _KDNode:
         self.right_child = None
         self.left_child = None
         self.data = data
+        self.datalength = self.data.shape[0]
         self.split_point = None
+        self.level = 0
 
-    def split(self, level=0):
+    def split(self, level=1):
 
         if level > 0:
             self.split_point = np.median(self.data[:,self.split_axis])
+            self.level = level
+            self.datalength = self.data.shape[0]
             child_axis = (self.split_axis+1)%self.dimensions
             left_data = self.data[self.data[:,self.split_axis] <= self.split_point]
             right_data = self.data[self.data[:,self.split_axis] > self.split_point]
@@ -116,6 +120,19 @@ class _KDNode:
             self.left_child.split(level-1)
             self.right_child.split(level-1)
 
+    def get_subtree_data(self):
+
+        if self.data is not None:
+            return self.data
+        else:
+            right_data = self.right_child.get_subtree_data()
+            left_data = self.left_child.get_subtree_data()
+            return np.concatenate((left_data, right_data))
+
+    def balance(self):
+        self.data = self.get_subtree_data()
+        self.split(self.level)
+
     def pre_order(self):
 
         if self.split_point is not None:
@@ -126,12 +143,13 @@ class _KDNode:
 
 class KDTreeKNN(BaseKNN):
 
-    def __init__(self, k, data, distance=2):
+    def __init__(self, k, data, distance=2, balance_distance=10):
 
         super(KDTreeKNN, self).__init__(k, data, distance)
         dimensions = self.data.shape[1]
         self.tree = _KDNode(dimensions, 0, self.data)
         self.tree.split(level=5)
+        self.balance_distance = balance_distance
         # self.tree.pre_order()
 
     def predict(self, x):
@@ -153,11 +171,15 @@ class KDTreeKNN(BaseKNN):
 
             node = self.tree
             while node.split_point is not None:
+                if np.abs(node.left_child.datalength-node.right_child.datalength) > self.balance_distance:
+                    node.balance()
+
                 if x[node.split_axis] <= node.split_point:
                     node = node.left_child
                 else:
                     node = node.right_child
 
-            node.data = np.concatenate(node.data, [x])
+            node.data = np.concatenate((node.data, np.array([x])))
+            node.datalength += 1
 
 
