@@ -164,16 +164,3 @@ class Data_Generator(DataSystem):
             data = self.generate(memory=True, path=None, **kwargs)
             # print(chunk_size)
             yield data
-
-# data_class = Data_Generator('constant_high', 100, 10, 1, 1000, 'gamma')
-# count = 0
-<<<<<<< HEAD
-# for data in data_class.data_generator(True, None, loc = 0.0, scale = 1.0, size = (data_class.num_points, data_class.dim)):
-=======
-# for data in data_class.generator(True, None):#, loc = 0.0, scale = 1.0, size = (data_class.num_points, data_class.dim)):
->>>>>>> 7cab119c1f0f9ae61766d3dce1dae4e6a39479a2
-#     print(data.shape)
-#     count+=1
-#     if (count==10):
-#         print(data)
-# print('final count is ', count)
