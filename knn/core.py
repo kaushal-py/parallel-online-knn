@@ -183,3 +183,131 @@ class KDTreeKNN(BaseKNN):
             node.datalength += 1
 
 
+class _ParallelKDNode:
+
+    def __init__(self, dimensions, split_axis, data, comm, node_id):
+        self.comm = comm
+        self.rank = self.comm.Get_rank()
+        self.num_procs = self.comm.Get_size()
+        self.split_axis = split_axis
+        self.dimensions = dimensions
+        self.right_child = None
+        self.left_child = None
+        self.data = data
+        self.split_point = None
+        self.level = 0
+        self.node_id = node_id
+
+    def split(self, level=1):
+
+        print("Split ran")
+        if level > 0:
+            if self.rank == 0:
+                self.split_point = np.median(self.data[:,self.split_axis])
+                self.datalength = self.data.shape[0]
+                self.metadata = {
+                    'split_point':self.split_point,
+                    'datalength':self.datalength,
+                }
+            else:
+                self.metadata = None
+
+
+            self.metadata = self.comm.bcast(self.metadata, root=0)
+            if self.rank != 0:
+                self.split_point = self.metadata['split_point']
+                self.datalength = self.metadata['datalength']
+
+
+            self.level = level
+            child_axis = (self.split_axis+1)%self.dimensions
+            if self.rank == 0:
+                left_data = self.data[self.data[:,self.split_axis] <= self.split_point]
+                right_data = self.data[self.data[:,self.split_axis] > self.split_point]
+            else:
+                left_data, right_data = None, None
+
+            self.right_child = _ParallelKDNode(self.dimensions, child_axis, right_data, self.comm, self.node_id)
+            self.left_child = _ParallelKDNode(self.dimensions, child_axis, left_data, self.comm, self.node_id+(2**(self.level-1)))
+
+            self.data = None
+            self.left_child.split(level-1)
+            self.right_child.split(level-1)
+
+        elif level == 0:
+
+            if self.rank == 0:
+                self.comm.send(self.data, dest=self.node_id, tag=self.node_id)
+            elif self.rank == self.node_id:
+                self.data = self.comm.recv(source=0, tag=self.node_id)
+
+
+    def get_subtree_data(self):
+
+        if self.data is not None:
+            return self.data
+        else:
+            right_data = self.right_child.get_subtree_data()
+            left_data = self.left_child.get_subtree_data()
+            return np.concatenate((left_data, right_data))
+
+    def balance(self):
+        self.data = self.get_subtree_data()
+        self.split(self.level)
+
+    def pre_order(self):
+
+        if self.split_point is not None:
+            print(self.split_axis, self.split_point)
+            self.left_child.pre_order()
+            self.right_child.pre_order()
+
+class ParallelKDTreeKNN(BaseKNN):
+
+    def __init__(self, k, data, distance=2, balance_distance=10):
+
+        super(ParallelKDTreeKNN, self).__init__(k, data, distance)
+        self.comm = MPI.COMM_WORLD
+        self.rank = self.comm.Get_rank()
+        self.num_procs = self.comm.Get_size()
+        print("Rank ", self.rank)
+
+        dimensions = self.data.shape[1]
+        if self.rank == 0:
+            self.tree = _ParallelKDNode(dimensions, 0, self.data, self.comm, 0)
+        else:
+            self.tree = _ParallelKDNode(dimensions, 0, None, self.comm, 0)
+        print("Split started")
+        self.tree.split(level=int(np.log2(self.num_procs)))
+        self.balance_distance = balance_distance
+        # self.tree.pre_order()
+
+    def predict(self, x):
+
+        node = self.tree
+        while node.split_point is not None:
+            if x[node.split_axis] <= node.split_point:
+                node = node.left_child
+            else:
+                node = node.right_child
+
+        distances = np.sum(self.distance(node.data- x), axis=1)
+        min_index = np.argmin(distances)
+        return node.data[min_index]
+
+    def add_batch(self, new_batch):
+
+        for x in new_batch:
+
+            node = self.tree
+            while node.split_point is not None:
+                if np.abs(node.left_child.datalength-node.right_child.datalength) > self.balance_distance:
+                    node.balance()
+
+                if x[node.split_axis] <= node.split_point:
+                    node = node.left_child
+                else:
+                    node = node.right_child
+
+            node.data = np.concatenate((node.data, np.array([x])))
+            node.datalength += 1
