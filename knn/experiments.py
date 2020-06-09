@@ -10,7 +10,7 @@ def execute(k, dim, build_dist, batch_dist, query_dist, batch_chunk_dist, query_
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
 
-    data_loader = knn.DataSystem(2, int(1e3), build_dist)
+    data_loader = knn.DataSystem(dim, 100, build_dist)
     data = data_loader.generate(memory=True, path=None)
     # Normalizing the data
     data = data/np.max(data, axis = 0)
@@ -54,6 +54,7 @@ def execute(k, dim, build_dist, batch_dist, query_dist, batch_chunk_dist, query_
 
         for chunk in next(batch_loader):
             build_itr+=1
+            print(chunk.shape)
             loop_KNN.add_batch(chunk)
             build_start = time.monotonic()
             vec_knn.add_batch(chunk)

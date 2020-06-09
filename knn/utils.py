@@ -162,5 +162,5 @@ class Data_Generator(DataSystem):
             chunk_size, flag = self.generate_chunk_size(total)
             total += chunk_size
             data = self.generate(memory=True, path=None, **kwargs)
-            # print(chunk_size)
+            # print(chunk_sixe)
             yield data
