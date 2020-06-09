@@ -86,7 +86,7 @@ class DataSystem:
         return args
 
 
-class Data_Generator(DataSystem):
+class Data_Generator(DataSystem, object):
 
     def __init__(self, chunk_dist, high=100, low=10, dim=2, num_points=1000, distribution = 'normal'):
 
@@ -101,7 +101,7 @@ class Data_Generator(DataSystem):
                     'low_high'               : A stretch of low values followed by high values
                     'high_low'               : A stretch of high values followed by low values
         """
-        super().__init__(dim=dim, num_points=num_points, distribution=distribution)
+        super(Data_Generator, self).__init__(dim=dim, num_points=num_points, distribution=distribution)
         self.chunk_dist = chunk_dist
         self.high = high
         self.low = low

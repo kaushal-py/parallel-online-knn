@@ -15,7 +15,7 @@ def execute(k, dim, build_dist, batch_dist, query_dist, batch_chunk_dist, query_
     # Normalizing the data
     data = data/np.max(data, axis = 0)
 
-    batch_generator = knn.Data_Generator(chunk_dist=batch_chunk_dist, high = int(1e7), dim=dim, num_points=batch_size, distribution=batch_dist)
+    batch_generator = knn.Data_Generator(chunk_dist=batch_chunk_dist, high = int(1e4), dim=dim, num_points=batch_size, distribution=batch_dist)
     batch_loader = batch_generator.generator()
 
     query_generator = knn.Data_Generator(chunk_dist=query_chunk_dist, dim=dim, num_points=query_size, distribution=query_dist)
@@ -27,7 +27,7 @@ def execute(k, dim, build_dist, batch_dist, query_dist, batch_chunk_dist, query_
     # query_itr = 0
 
     # build_start = time.monotonic()
-    # loop_KNN = knn.LoopKNN(k, data, distance)
+    loop_KNN = knn.LoopKNN(k, data, distance)
     # build_end = time.monotonic()
     # # print('Building Tree, LoopKNN, ', build_itr+1, ', Time taken, ', build_end-build_start)
 
@@ -48,7 +48,7 @@ def execute(k, dim, build_dist, batch_dist, query_dist, batch_chunk_dist, query_
         build_time = 0
         query_time = 0
 
-        loop_KNN = knn.LoopKNN(k, data, distance)
+        # loop_KNN = knn.LoopKNN(k, data, distance)
         build_start = time.monotonic()
         vec_knn = knn.VectorKNN(k, data, distance)
         build_end = time.monotonic()
@@ -57,22 +57,24 @@ def execute(k, dim, build_dist, batch_dist, query_dist, batch_chunk_dist, query_
         for chunk in batch_loader:
             build_itr+=1
             # print(chunk.shape)
-            loop_KNN.add_batch(chunk/np.max(chunk, axis = 0))
+            # loop_KNN.add_batch(chunk/np.max(chunk, axis = 0))
             build_start = time.monotonic()
             vec_knn.add_batch(chunk/np.max(chunk, axis = 0))
             build_end = time.monotonic()
             build_time += build_end - build_start
-            # print('Building Tree, VectorKNN, ', build_itr+1, ', Time taken, ', build_end-build_start)
+            print('Building Tree, VectorKNN, ', build_itr+1, ', Time taken, ', build_end-build_start)
             # build_itr+=1
-            if (build_itr%10 == 0):
-                loop_result = loop_KNN.predict(np.array([1.0,0.0]))
+            if (build_itr%5 == 0):
+                # loop_result = loop_KNN.predict(np.array([1.0,0.0]))
                 query_start = time.monotonic()
                 result = vec_knn.predict(np.array([1.0,0.0]))
                 query_end = time.monotonic()
-                assert np.array_equal(loop_result, result), "Outputs did not match."
-                print('Querying , VectorKNN, ', query_itr+1, ', Time taken, ', query_end-query_start)
+                query_time += query_end - query_start
+                # assert np.array_equal(loop_result, result), "Outputs did not match."
+                # print('Querying , VectorKNN, ', query_itr+1, ', Time taken, ', query_end-query_start)
                 query_itr+=1
         print('Build Time: ',build_time)
+        print('Query Time: ',query_time)
     
     elif algo_type == 'PVKNN':
         
@@ -150,7 +152,7 @@ if __name__ == "__main__":
     query_dist = 'normal'
     batch_chunk_dist = 'constant_high'
     query_chunk_dist = 'constant_low'
-    batch_size = 10000000
+    batch_size = int(1e5)
     query_size = 100
     algo_type = 'VKNN'
     distance = 2
