@@ -172,6 +172,7 @@ class KDTreeKNN(BaseKNN):
             node = self.tree
             while node.split_point is not None:
                 if np.abs(node.left_child.datalength-node.right_child.datalength) > self.balance_distance:
+                    print("Balance called")
                     node.balance()
 
                 if x[node.split_axis] <= node.split_point:
@@ -197,10 +198,10 @@ class _ParallelKDNode:
         self.split_point = None
         self.level = 0
         self.node_id = node_id
+        self.datalength = None
 
     def split(self, level=1):
 
-        print("Split ran")
         if level > 0:
             if self.rank == 0:
                 self.split_point = np.median(self.data[:,self.split_axis])
@@ -237,22 +238,45 @@ class _ParallelKDNode:
         elif level == 0:
 
             if self.rank == 0:
+                self.datalength = self.data.shape[0]
+            self.datalength = self.comm.bcast(self.datalength, root=0)
+
+            if self.rank == 0 and self.node_id != 0:
                 self.comm.send(self.data, dest=self.node_id, tag=self.node_id)
-            elif self.rank == self.node_id:
+                self.data = None
+            elif self.rank != 0 and self.rank == self.node_id:
                 self.data = self.comm.recv(source=0, tag=self.node_id)
+
 
 
     def get_subtree_data(self):
 
-        if self.data is not None:
+        if self.level == 0 and self.rank == 0 and self.node_id != 0:
+            data = self.comm.recv(source=self.node_id)
+            return data
+        elif self.level == 0 and self.rank == 0 and self.node_id == 0:
             return self.data
-        else:
+        elif self.level == 0 and self.rank == self.node_id:
+            assert self.data is not None, "Correct node id has empty data"
+            print("Sent by ", self.node_id)
+            self.comm.send(self.data, dest=0)
+            return None
+        elif self.level != 0:
             right_data = self.right_child.get_subtree_data()
             left_data = self.left_child.get_subtree_data()
-            return np.concatenate((left_data, right_data))
+            if self.rank == 0:
+                assert right_data is not None and left_data is not None, "Process 0 data is none"
+                return np.concatenate((left_data, right_data))
+            else:
+                assert right_data is None and left_data is None, "Data is not none"
+
+                return None
 
     def balance(self):
-        self.data = self.get_subtree_data()
+        print("Balance called on ", self.level, self.node_id, "by", self.rank)
+        data = self.get_subtree_data()
+        if self.rank == 0:
+            self.data = data
         self.split(self.level)
 
     def pre_order(self):
@@ -270,14 +294,12 @@ class ParallelKDTreeKNN(BaseKNN):
         self.comm = MPI.COMM_WORLD
         self.rank = self.comm.Get_rank()
         self.num_procs = self.comm.Get_size()
-        print("Rank ", self.rank)
 
         dimensions = self.data.shape[1]
         if self.rank == 0:
             self.tree = _ParallelKDNode(dimensions, 0, self.data, self.comm, 0)
         else:
             self.tree = _ParallelKDNode(dimensions, 0, None, self.comm, 0)
-        print("Split started")
         self.tree.split(level=int(np.log2(self.num_procs)))
         self.balance_distance = balance_distance
         # self.tree.pre_order()
@@ -291,23 +313,35 @@ class ParallelKDTreeKNN(BaseKNN):
             else:
                 node = node.right_child
 
-        distances = np.sum(self.distance(node.data- x), axis=1)
-        min_index = np.argmin(distances)
-        return node.data[min_index]
+        if node.data is not None:
+            distances = np.sum(self.distance(node.data- x), axis=1)
+            min_index = np.argmin(distances)
+            return node.data[min_index]
+        else:
+            return None
 
     def add_batch(self, new_batch):
 
         for x in new_batch:
 
+            # print(self.tree.datalength, "as seen by", self.rank, "for", x)
             node = self.tree
-            while node.split_point is not None:
+            while node.level != 0:
                 if np.abs(node.left_child.datalength-node.right_child.datalength) > self.balance_distance:
                     node.balance()
+
+                # node.datalength += 1
 
                 if x[node.split_axis] <= node.split_point:
                     node = node.left_child
                 else:
                     node = node.right_child
 
-            node.data = np.concatenate((node.data, np.array([x])))
             node.datalength += 1
+            if node.data is not None:
+                node.data = np.concatenate((node.data, np.array([x])))
+                # print("Data inserted at node", node.node_id, self.rank)
+
+            self.comm.Barrier()
+            # print("barrier called by", self.rank, "for", x)
+
