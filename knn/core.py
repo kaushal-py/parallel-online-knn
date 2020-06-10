@@ -330,7 +330,7 @@ class ParallelKDTreeKNN(BaseKNN):
                 if np.abs(node.left_child.datalength-node.right_child.datalength) > self.balance_distance:
                     node.balance()
 
-                # node.datalength += 1
+                node.datalength += 1
 
                 if x[node.split_axis] <= node.split_point:
                     node = node.left_child
