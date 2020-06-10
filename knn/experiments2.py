@@ -82,7 +82,7 @@ def execute(k, dim, init_size, build_dist, batch_dist, \
 
         # loop_KNN = knn.LoopKNN(k, data, distance)
         
-        vec_knn = knn.VectorKNN(k, data, distance)
+        # vec_knn = knn.VectorKNN(k, data, distance)
         build_start = time.monotonic()
         par_vec_knn = knn.ParallelVectorKNN(k, data, distance)
         if rank == 0:
@@ -91,21 +91,21 @@ def execute(k, dim, init_size, build_dist, batch_dist, \
 
         #Querying with both distributions
         for i in range(2):
-            check = vec_knn.predict(query_data[i])
+            # check = vec_knn.predict(query_data[i])
             query_start = time.monotonic()
             result = par_vec_knn.predict(query_data[i])
             
             if rank == 0:
                 query_end = time.monotonic()
                 query_time += query_end-query_start
-                assert np.array_equal(check, result), "Outputs did not match."
+                # assert np.array_equal(check, result), "Outputs did not match."
                 print('Query Time, ParallelVectorKNN, ', query_dist_list[i], ' , ', query_end - query_start)
         
         # print('Building Tree, VectorKNN, ', build_itr+1, ', Time taken, ', build_end-build_start)
 
         for chunk in batch_loader:
             build_itr+=1
-            vec_knn.add_batch(chunk/np.max(chunk, axis = 0))
+            # vec_knn.add_batch(chunk/np.max(chunk, axis = 0))
             build_start = time.monotonic()
             par_vec_knn.add_batch(chunk/np.max(chunk, axis = 0))
             build_end = time.monotonic()
@@ -114,14 +114,14 @@ def execute(k, dim, init_size, build_dist, batch_dist, \
                 print('Time for inssertion, ', build_itr+1,' ,ParallelVectorKNN, ', build_end - build_start)
             # build_itr+=1
             for i in range(2,4):
-                check = vec_knn.predict(query_data[i])
+                # check = vec_knn.predict(query_data[i])
                 query_start = time.monotonic()
                 result = par_vec_knn.predict(query_data[i])
                 
                 if rank == 0:
                     query_end = time.monotonic()
                     query_time += query_end-query_start
-                    assert np.array_equal(check, result), "Outputs did not match."
+                    # assert np.array_equal(check, result), "Outputs did not match."
                     print('Query Time, ParallelVectorKNN, ', query_dist_list[i-2], ' , ', query_end - query_start)
         if rank == 0:
             print('Build Time: ',build_time)
@@ -136,7 +136,7 @@ def execute(k, dim, init_size, build_dist, batch_dist, \
 
         # loop_KNN = knn.LoopKNN(k, data, distance)
         
-        vec_knn = knn.VectorKNN(k, data, distance)
+        # vec_knn = knn.VectorKNN(k, data, distance)
         build_start = time.monotonic()
         kdt_knn = knn.KDTreeKNN(k, data, distance, balance_dist)
         build_end = time.monotonic()
@@ -150,14 +150,14 @@ def execute(k, dim, init_size, build_dist, batch_dist, \
             
             query_end = time.monotonic()
             query_time += query_end-query_start
-            assert np.array_equal(check, result), "Outputs did not match."
+            # assert np.array_equal(check, result), "Outputs did not match."
             print('Query Time, ParallelVectorKNN, ', query_dist_list[i], ' , ', query_end - query_start)
         
         # print('Building Tree, VectorKNN, ', build_itr+1, ', Time taken, ', build_end-build_start)
 
         for chunk in batch_loader:
             build_itr+=1
-            vec_knn.add_batch(chunk/np.max(chunk, axis = 0))
+            # vec_knn.add_batch(chunk/np.max(chunk, axis = 0))
             build_start = time.monotonic()
             kdt_knn.add_batch(chunk/np.max(chunk, axis = 0))
             build_end = time.monotonic()
@@ -165,13 +165,13 @@ def execute(k, dim, init_size, build_dist, batch_dist, \
             print('Time for inssertion, ', build_itr+1,' ,ParallelVectorKNN, ', build_end - build_start)
             # build_itr+=1
             for i in range(2,4):
-                check = vec_knn.predict(query_data[i])
+                # check = vec_knn.predict(query_data[i])
                 query_start = time.monotonic()
                 result = kdt_knn.predict(query_data[i])
 
                 query_end = time.monotonic()
                 query_time += query_end-query_start
-                assert np.array_equal(check, result), "Outputs did not match."
+                # assert np.array_equal(check, result), "Outputs did not match."
                 print('Query Time, ParallelVectorKNN, ', query_dist_list[i-2], ' , ', query_end - query_start)
 
             print('Build Time: ',build_time)
