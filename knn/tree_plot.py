@@ -44,9 +44,9 @@ if __name__ == "__main__":
     # axs.append(fig.add_subplot(gs1[count]))
     plt.scatter(data[:,0], data[:, 1], s = 10, color = 'b')
 
-    data_class = knn.DataSystem(2, int(500), 'gamma')
+    data_class = knn.DataSystem(2, int(500), 'uniform')
     data = data_class.generate(True, None)
-    data = data/np.max(data, axis = 0)
+    data = (data/np.max(data, axis = 0))
     # axs.append(fig.add_subplot(gs1[count]))
     plt.scatter(data[:,0], data[:, 1], s = 10, color = 'r')
     plt.show()
