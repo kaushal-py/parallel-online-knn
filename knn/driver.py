@@ -34,8 +34,11 @@ def main():
 # 
 #         # assert np.array_equal(nearest_loop, nearest_vector), "Outputs did not match."
 # 
-#         model_kd = knn.KDTreeKNN(1, data, balance_distance=2)
-#         model_kd.add_batch(next(batch_loader))
+#         model_kd = knn.KDTreeKNN(1, data, balance_distance=10)
+#                 
+#         data_batch = next(batch_loader)
+#         data_batch /= np.max(data_batch, axis=0)
+#         model_kd.add_batch(data_batch)
 #         start = time.monotonic()
 #         nearest_kd = model_kd.predict(np.array([1.0,0.0]))
 #         end = time.monotonic()
@@ -54,11 +57,13 @@ def main():
 #         end = time.monotonic()
 #         print("Execution Time:", end-start)
 
-    next(batch_loader)
-    next(batch_loader)
     print("Processes started")
     model_parallel_kdtree = knn.ParallelKDTreeKNN(1, data, balance_distance=10)
     print("Creation done")
+    model_parallel_kdtree.add_batch(next(batch_loader))
+    model_parallel_kdtree.add_batch(next(batch_loader))
+    model_parallel_kdtree.add_batch(next(batch_loader))
+    model_parallel_kdtree.add_batch(next(batch_loader))
     model_parallel_kdtree.add_batch(next(batch_loader))
     print("Data added")
     comm.Barrier()
